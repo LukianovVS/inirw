@@ -52,25 +52,34 @@ public:
   }
 
   //! set value of field
+  template <typename T>
+  Field& operator=(const T& val){
+    std::stringstream ss;
+    ss << val;
+    ss >> m_val;
+    return *this;
+  }
+
   Field& operator=(const std::string& val){
     m_val = val;
     return *this;
   }
 
+
   //! get value
-  template <typename T>
-  T operator()() const{
-    T tmp;
+  template <class ValOut>
+  ValOut operator()() const{
+    ValOut tmp;
     std::stringstream ss(m_val);
     ss >> tmp;
     return tmp;
   }
 
-  template <typename T>
-  void operator()(T& val){
-    std::stringstream ss(m_val);
-    ss >> val;
-  }
+//  template <typename T>
+//  void operator()(T& val){
+//    std::stringstream ss(m_val);
+//    ss >> val;
+//  }
 
 //  std::string operator()() const{
 //    return m_val;
