@@ -6,62 +6,15 @@
 using std::cout, std::cin, std::endl;
 
 
-#include <vector>
-#include <map>
-
-//struct C{
-//  std::string name;
-//  std::string val;
-//  std::string tmp_name = "";
-//};
-//
-//
-//struct B{
-//  std::string name;
-//  std::vector<C> v;
-//
-//  C& operator[](std::string name){
-//      for(C& c: v){
-//        if(c.name == name)
-//          return c;
-//      }
-//
-//    }
-//
-//    B& operator=(std::string name, std::string val){
-//      C c={name, val};
-//      v.push_back(c);
-//    }
-//
-//};
-//
-//struct A{
-//    std::vector<B> v;
-//
-//    B& operator[](std::string name){
-//      for(B& b: v){
-//        if(b.name == name)
-//          return b;
-//      }
-//    }
-//
-//
-//
-//};
-
-
-namespace nsp{
-
-class Mc{
-  int a = 10;
-public:
-  friend std::ostream& operator<<(std::ostream& out, const Mc& obj);
-};
-
-std::ostream& operator<<(std::ostream& out, const Mc& obj){
-  return out << "a = " << obj.a << endl;
+template <typename T>
+T myfunc(const std::string & s){
+  std::stringstream ss(s);
+  T t;
+  ss >> t;
+  return t;
 }
-}
+
+
 
 int main(int argc, char* argv[])
 {
@@ -76,18 +29,34 @@ int main(int argc, char* argv[])
 //  config.view();
 
 //
+
+//  std::stringstream ss;
+//
+//  int a = 10;
+//
+//  cout << "a = "; cin >> a;
+//  ss << a;
+//  std::string s;
+//  ss >> s;
+//  cout << "s = " << s << endl;
+
+//  int a;
+//  a = myfunc<int>("10");
+//  cout << "a = " << a << endl;
+//  return 0;
   inirw::Field f;
 
   f["name"] = "1";
 
-  cout << "val = ";
-  cin >> f;
-
+  f = "10";
   cout << f << endl;
 
-  std::string qwe = f();
+  f = 12;
+  cout << f << endl;
 
-  cout << "qwe = " << qwe << endl;
+  int i = f.get<int>();
+  cout << "i+10 = " << i+10 << endl;
+
 
 
   return 0;

@@ -68,21 +68,20 @@ public:
 
   //! get value
   template <class ValOut>
-  ValOut operator()() const{
+  ValOut get() const{
     ValOut tmp;
     std::stringstream ss(m_val);
     ss >> tmp;
     return tmp;
   }
 
-//  template <typename T>
-//  void operator()(T& val){
-//    std::stringstream ss(m_val);
-//    ss >> val;
-//  }
 
-//  std::string operator()() const{
-//    return m_val;
+//  template <class ValOut>
+//  ValOut operator()() const{
+//    ValOut tmp;
+//    std::stringstream ss(m_val);
+//    ss >> tmp;
+//    return tmp;
 //  }
 
 
