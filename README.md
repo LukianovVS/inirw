@@ -1,3 +1,9 @@
+
+Simple Editor ini-files
+
+
+
+```c++
 #include <iostream>
 #include "inirw.h"
 
@@ -5,6 +11,7 @@ using std::cout, std::cin, std::endl;
 
 int main(int argc, char* argv[])
 {
+
   cout << "DEMO Field" << endl;
   inirw::Field field("name", "value");
   cout << field;
@@ -28,3 +35,30 @@ int main(int argc, char* argv[])
 
   return 0;
 }
+
+```
+out:
+
+```
+DEMO Field
+name=value
+name=123
+
+DEMO Section
+[AbC]
+A=1
+B=2
+C=3
+
+Demo inifile
+[section_1]
+A=1
+B=2
+C=3
+[section_2]
+D=4
+E=5
+F=6
+```
+
+
