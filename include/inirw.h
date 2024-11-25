@@ -13,6 +13,52 @@ using Field_t = std::pair<std::string, std::string>;
 using Section_t = std::pair<std::string, std::initializer_list<Field_t>>;
 
 
+enum class TypeLine{
+  EmptyL,
+  SectionL,
+  FieldL,
+
+};
+
+class StringIni: public std::string {
+
+public:
+
+  void split_field(std::string &key, std::string& val, const std::string& delimiter) const{
+    size_t pos = this->find(delimiter);
+    // TODO check Exception
+    key = this->substr(0, pos);
+    val = this->substr(pos+delimiter.length());
+  }
+
+
+  TypeLine detectTypeLine() const{
+    if(this->length() == 0)
+      return TypeLine::EmptyL;
+    else if((*this)[0] == '[')
+      return TypeLine::SectionL;
+    else if(this->find("=") != this->npos)
+      return TypeLine::FieldL;
+    // ERROR
+    return TypeLine::EmptyL;
+
+  }
+
+
+  std::string getSectionName() const{
+    std::size_t pos_beg = this->find("[") + 1;
+    std::size_t pos_end = this->find("]");
+    return this->substr(pos_beg, pos_end - pos_beg);
+  }
+
+  void getKeyVal(std::string& key, std::string& val) const{
+    split_field(key, val, "=");
+  }
+
+
+};
+
+
 template <typename T> class MapOrder{
 protected:
   std::vector<std::string> m_order;
@@ -57,6 +103,13 @@ public:
 class Field{
   std::string m_name;
   std::string m_val;
+
+  void split(std::string &key, std::string& val, std::string& line, const std::string& delimiter){
+    size_t pos = line.find(delimiter);
+    // TODO check Exception
+    key = line.substr(0, pos);
+    val = line.substr(pos+delimiter.length());
+  }
 
 public:
 
@@ -123,7 +176,10 @@ std::ostream& operator<<(std::ostream& os, const Field& obj){
 }
 
 std::istream& operator>>(std::istream& is, Field& obj){
-  return is >> obj.m_val;
+  std::string line;
+  is >> line;
+  obj.split(obj.m_name, obj.m_val, line, "=");
+  return is;
 }
 
 //-----------------------------------------------------------------------------------
@@ -138,6 +194,7 @@ class Section : private MapOrder<Field>
 
   void updateData(const std::string& key, const std::string& val){
     if(is_key_exist(key)){
+      erase(key);
       Field& t = addEmpty(key);
       t = Field_t(key, val);
     }
@@ -168,8 +225,10 @@ public:
     return *this;
   }
 
-  Section& operator-=(const std::string& name){
-    erase(name);
+  Section& operator+=(const StringIni& line){
+    std::string key, val;
+    line.getKeyVal(key, val);
+    updateData(key, val);
     return *this;
   }
 
@@ -177,18 +236,18 @@ public:
 
 
   friend std::ostream& operator<<(std::ostream& os, const Section& obj);
+//  friend std::istream& operator>>(std::istream& is, Section& obj);
 
 };
-
 
 std::ostream& operator<<(std::ostream& os, const Section& obj){
   os << "[" << obj.m_name << "]" << std::endl;
   for(auto& [key, val]: obj.m_data){
-//    std::cout << "k = " << key << "; v = "<< val << std::endl;
     os << val;
   }
   return os;
 }
+
 
 
 
@@ -198,6 +257,10 @@ class IniRW: protected MapOrder<Section> {
 
   public:
     IniRW() = default;
+    IniRW(std::initializer_list<Section_t> section_lst){
+      (*this) = section_lst;
+    }
+
 
     ~IniRW() = default;
 
@@ -216,8 +279,10 @@ class IniRW: protected MapOrder<Section> {
       return *this;
     }
 
-    friend std::ostream& operator<<(std::ostream& os,  IniRW& obj);
 
+
+    friend std::ostream& operator<<(std::ostream& os, IniRW& obj);
+    friend std::istream& operator>>(std::istream& is, IniRW& obj);
 
 };
 
@@ -226,6 +291,33 @@ std::ostream& operator<<(std::ostream& os, IniRW& obj){
     os << obj.m_data[section_name];
   }
   return os;
+}
+
+std::istream& operator>>(std::istream& is, IniRW& obj){
+  StringIni line;
+  Section* section = nullptr;
+  size_t line_num = 0;
+  while(getline(is, line)){
+    ++line_num;
+    TypeLine typeLine = line.detectTypeLine();
+    switch(typeLine){
+      case TypeLine::SectionL:{
+        std::string section_name = line.getSectionName();
+        section = &obj.addEmpty(section_name);
+        break;
+      }
+      case TypeLine::FieldL:{
+        if(!section){
+          std::cerr << "Error parser. Not define Section. Line number " << line_num << std::endl;
+          return is; // TODO Exception;
+        }
+        (*section) += line;
+        break;
+      }
+      case TypeLine::EmptyL: continue;
+    }
+  }
+  return is;
 }
 
 
